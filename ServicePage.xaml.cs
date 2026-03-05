@@ -28,8 +28,90 @@ namespace Mazina_GlazkiSave
             ComboType.SelectedIndex = 0;
             ComboSort.SelectedIndex = 0;
             UpdateService();
+            TableList = currentServices;
         }
+        int CountRecords; // записи
+        int CountPage; // страницы
+        int CurrentPage = 0; // текущ стр 
 
+        List<Agent> CurrentPageList = new List<Agent>();
+        List<Agent> TableList;
+        private void ChangePage(int direction, int?SelectedPage)
+        {
+            CurrentPageList.Clear();
+            CountRecords = TableList.Count;
+            if (CountRecords % 10 > 0)
+            {
+                CurrentPage = CountRecords / 10 + 1;
+            }
+            else
+            {
+                CountPage = CountRecords / 10;
+            }
+
+            Boolean Ifupdate = true;
+            int min;
+            if (SelectedPage.HasValue)
+            {
+                if (SelectedPage >= 0 && SelectedPage <= CountPage)
+                {
+                    CurrentPage = (int)SelectedPage;
+                    min = CurrentPage * 10 + 10 < CountRecords ? CountPage * 10 + 10 : CountRecords;
+                    for (int i = CurrentPage * 10; i < min; i++)
+                    {
+                        CurrentPageList.Add(TableList[i]);
+                    }
+                }
+            }
+            else
+            {
+                switch (direction)
+                {
+                    case 1:
+                        if (CurrentPage>0)
+                        {
+                            CurrentPage--;
+                            min = CurrentPage * 10 + 10 < CountRecords ? CurrentPage * 10 + 10 : CountRecords;
+                            for (int i = CurrentPage * 10;i < min; i++)
+                            {
+                                CurrentPageList.Add(TableList[i]);
+                            }
+                        }
+                        else
+                        {
+                            Ifupdate = false;
+                        }
+                        break;
+                    case 2:
+                        if(CurrentPage<CountPage-1)
+                        {
+                            CurrentPage++;
+                            min = CurrentPage * 10 + 10 < CountRecords ? CurrentPage * 10 + 10 : CountRecords;
+                            for(int i = CurrentPage * 10; i<= min; i++)
+                            {
+                                CurrentPageList.Add(TableList[i]);
+                            }
+                        }
+                        else
+                        {
+                            Ifupdate = false;
+                        }
+                        break;
+                       
+                }
+            }
+            if (Ifupdate)
+            {
+                PageListBox.Items.Clear();
+                for (int i = 1; i <= CountPage; i++)
+                {
+                    PageListBox.Items.Add(i);
+                }
+                PageListBox.SelectedIndex = CurrentPage;
+                ServiceListView.ItemsSource = CurrentPageList;
+                ServiceListView.Items.Refresh();
+            }
+        }
         private void UpdateService()
         {
             try
@@ -132,6 +214,28 @@ namespace Mazina_GlazkiSave
         private void ComboType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateService();
+        }
+
+        private void LeftDirBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ChangePage(1,null);
+        }
+
+        private void RightDirBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ChangePage(2,null);
+        }
+
+        private void PageListBox_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if(PageListBox.SelectedItem !=null)
+            {
+                if(int.TryParse(PageListBox.SelectedItem.ToString(),out int pageNumber))
+                {
+                    ChangePage(0,pageNumber-1);
+                }
+            }
+          //  ChangePage(0, Convert.ToInt32(PageListBox.SelectedItem.ToString()) - 1);
         }
     }
 }

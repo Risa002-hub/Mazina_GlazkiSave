@@ -52,15 +52,19 @@
                             <RowDefinition Height="*"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Image Width="150" Grid.Column="0" Grid.RowSpan="4" Stretch="UniformToFill" HorizontalAlignment="Center">
-                            <Image.Source>
-                                <Binding Path="Logo">
-                                    <Binding.TargetNullValue>
-                                        <ImageSource>
-                                            \agents\picture.png
-                                        </ImageSource>
-                                    </Binding.TargetNullValue>
-                                </Binding>
-                            </Image.Source>
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Source" Value="{Binding Logo}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Logo}" Value="{x:Null}">
+                                                <Setter Property="Source" Value="/agents/picture.png"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Logo}" Value="">
+                                                <Setter Property="Source" Value="/agents/picture.png"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
                         </Image>
                         
 
@@ -83,7 +87,17 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="LeftDirBtn" Content="&lt;" Width="25" Height="25" Click="LeftDirBtn_Click"></Button>
+            <ListBox Name="PageListBox" FontSize="20" MouseUp="PageListBox_MouseUp">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"></WrapPanel>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+            <Button Name="RightDirBtn" Content="&gt;" Width="25" Height="25" Click="RightDirBtn_Click"></Button>
+        </StackPanel>
         
         
     </Grid>
