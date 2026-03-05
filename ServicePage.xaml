@@ -15,8 +15,8 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" Background="#FFE9F9">
-            <TextBox Name="TBSearch" Margin="5" TextChanged="TBSearch_TextChanged" FontSize="15" Width="300"></TextBox>
-            <ComboBox Name="ComboSort" Margin="5"  SelectionChanged="ComboSort_SelectionChanged" FontSize="18" Width="250">
+            <TextBox Name="TBSearch" Margin="5" TextChanged="TBSearch_TextChanged" FontSize="15" Width="200"></TextBox>
+            <ComboBox Name="ComboSort" Margin="5"  SelectionChanged="ComboSort_SelectionChanged" FontSize="18" Width="200">
                 <TextBlock>Все</TextBlock>
                 <TextBlock>По наименовниюо возрастанию</TextBlock>
                 <TextBlock>По наименовнию по убыванию</TextBlock>
@@ -25,7 +25,7 @@
                 <TextBlock>По скидке по возрастанию</TextBlock>
                 <TextBlock>По скидке по убыванию</TextBlock>
             </ComboBox>
-            <ComboBox Name="ComboType" Margin="5" SelectionChanged="ComboType_SelectionChanged" FontSize="18" Width="230">
+            <ComboBox Name="ComboType" Margin="5" SelectionChanged="ComboType_SelectionChanged" FontSize="18" Width="150">
                 <TextBlock>Все типы</TextBlock>
                 <TextBlock>МФО</TextBlock>
                 <TextBlock>ООО</TextBlock>
@@ -98,7 +98,7 @@
             </ListBox>
             <Button Name="RightDirBtn" Content="&gt;" Width="25" Height="25" Click="RightDirBtn_Click"></Button>
         </StackPanel>
-        
+        <Button Content="Добавить агента" Name="AddBtn" Click="AddBtn_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Button>
         
     </Grid>
 </Page>

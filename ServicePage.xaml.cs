@@ -29,88 +29,57 @@ namespace Mazina_GlazkiSave
             ComboSort.SelectedIndex = 0;
             UpdateService();
             TableList = currentServices;
+            ChangePage(0, 0);
         }
         int CountRecords; // записи
-        int CountPage; // страницы
+        int CountPage;
         int CurrentPage = 0; // текущ стр 
 
         List<Agent> CurrentPageList = new List<Agent>();
         List<Agent> TableList;
-        private void ChangePage(int direction, int?SelectedPage)
-        {
-            CurrentPageList.Clear();
-            CountRecords = TableList.Count;
-            if (CountRecords % 10 > 0)
-            {
-                CurrentPage = CountRecords / 10 + 1;
-            }
-            else
-            {
-                CountPage = CountRecords / 10;
-            }
+        int AgentCount = 10;
+        private void ChangePage(int direction, int? selectedPage)
 
-            Boolean Ifupdate = true;
-            int min;
-            if (SelectedPage.HasValue)
+        {
+            if (PageListBox == null) return;// смотрим наличие данных
+
+            CountRecords = TableList.Count; // общее колво данных
+            CountPage = (int)Math.Ceiling((double)CountRecords / AgentCount); //кол-во записей на  агентов стр
+            if (selectedPage.HasValue) //текущая страница
             {
-                if (SelectedPage >= 0 && SelectedPage <= CountPage)
-                {
-                    CurrentPage = (int)SelectedPage;
-                    min = CurrentPage * 10 + 10 < CountRecords ? CountPage * 10 + 10 : CountRecords;
-                    for (int i = CurrentPage * 10; i < min; i++)
-                    {
-                        CurrentPageList.Add(TableList[i]);
-                    }
-                }
+                CurrentPage = selectedPage.Value;
             }
             else
             {
                 switch (direction)
                 {
-                    case 1:
-                        if (CurrentPage>0)
-                        {
-                            CurrentPage--;
-                            min = CurrentPage * 10 + 10 < CountRecords ? CurrentPage * 10 + 10 : CountRecords;
-                            for (int i = CurrentPage * 10;i < min; i++)
-                            {
-                                CurrentPageList.Add(TableList[i]);
-                            }
-                        }
-                        else
-                        {
-                            Ifupdate = false;
-                        }
-                        break;
-                    case 2:
-                        if(CurrentPage<CountPage-1)
-                        {
-                            CurrentPage++;
-                            min = CurrentPage * 10 + 10 < CountRecords ? CurrentPage * 10 + 10 : CountRecords;
-                            for(int i = CurrentPage * 10; i<= min; i++)
-                            {
-                                CurrentPageList.Add(TableList[i]);
-                            }
-                        }
-                        else
-                        {
-                            Ifupdate = false;
-                        }
-                        break;
-                       
+                    case 1: CurrentPage--; break;
+                    case 2: CurrentPage++; break;
                 }
             }
-            if (Ifupdate)
+
+            //ограничение
+            if (CurrentPage < 0)
             {
-                PageListBox.Items.Clear();
-                for (int i = 1; i <= CountPage; i++)
-                {
-                    PageListBox.Items.Add(i);
-                }
-                PageListBox.SelectedIndex = CurrentPage;
-                ServiceListView.ItemsSource = CurrentPageList;
-                ServiceListView.Items.Refresh();
+                CurrentPage = 0;
             }
+            if (CurrentPage >= CountPage)
+            {
+                CurrentPage = CountPage - 1;
+            }
+
+            CurrentPageList = TableList
+                .Skip(CurrentPage * AgentCount)
+                .Take(AgentCount) // берем 10 новых агентов
+                .ToList(); // на страницу
+            PageListBox.Items.Clear(); //обновление списка на странице
+            for (int i = 1; i <= CountPage; i++) 
+            {
+                PageListBox.Items.Add(i);
+            }
+            PageListBox.SelectedIndex = CurrentPage;
+            ServiceListView.ItemsSource = CurrentPageList;
+            ServiceListView.Items.Refresh();
         }
         private void UpdateService()
         {
@@ -196,11 +165,6 @@ namespace Mazina_GlazkiSave
 
         }
         
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Manager.MainFrame.Navigate(new AddEditPage());
-        }
-
         private void TBSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateService();
@@ -236,6 +200,11 @@ namespace Mazina_GlazkiSave
                 }
             }
           //  ChangePage(0, Convert.ToInt32(PageListBox.SelectedItem.ToString()) - 1);
+        }
+
+        private void AddBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Manager.MainFrame.Navigate(new AddEditPage(null));
         }
     }
 }
