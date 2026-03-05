@@ -44,9 +44,9 @@ namespace Mazina_GlazkiSave
             {
                 CurrentPage = CountRecords / 10 + 1;
             }
-            else
+            else 
             {
-                CountPage = CountRecords / 10;
+                CountPage = CountRecords / 10;  
             }
 
             Boolean Ifupdate = true;
