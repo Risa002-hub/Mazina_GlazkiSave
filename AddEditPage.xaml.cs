@@ -16,7 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Mazina_GlazkiSave
-{
+{ 
     /// <summary>
     /// Логика взаимодействия для AddEditPage.xaml
     /// </summary>
