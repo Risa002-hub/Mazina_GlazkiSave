@@ -73,7 +73,7 @@ namespace Mazina_GlazkiSave
                 .Take(AgentCount) // берем 10 новых агентов
                 .ToList(); // на страницу
             PageListBox.Items.Clear(); //обновление списка на странице
-            for (int i = 1; i <= CountPage; i++) 
+            for (int i = 1; i <= CountPage; i++)
             {
                 PageListBox.Items.Add(i);
             }
@@ -86,7 +86,7 @@ namespace Mazina_GlazkiSave
             try
             {
                 var currentServices = Mazina_GLAZKIEntities1.GetContext().Agent.ToList();
-                if (ComboType.SelectedItem !=null)
+                if (ComboType.SelectedItem != null)
                 {
                     string selectedType = (ComboType.SelectedItem as TextBlock).Text;
 
@@ -104,7 +104,7 @@ namespace Mazina_GlazkiSave
                         .Replace(")", "")
                         .Replace("-", "")
                         .Replace(" ", "");
-                        //.Replace("8", "7");
+                    //.Replace("8", "7");
 
                     currentServices = currentServices.Where(p =>
                         // Поиск по названию
@@ -152,7 +152,8 @@ namespace Mazina_GlazkiSave
                 {
                     currentServices = currentServices.OrderByDescending(p => p.Discount).ToList();
                 }
-
+                // Сохраняем отфильтрованный список для пагинации
+                TableList = currentServices;
 
                 // Показываем результат
                 ServiceListView.ItemsSource = currentServices;
@@ -164,7 +165,7 @@ namespace Mazina_GlazkiSave
             }
 
         }
-        
+
         private void TBSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateService();
@@ -182,29 +183,63 @@ namespace Mazina_GlazkiSave
 
         private void LeftDirBtn_Click(object sender, RoutedEventArgs e)
         {
-            ChangePage(1,null);
+            ChangePage(1, null);
         }
 
         private void RightDirBtn_Click(object sender, RoutedEventArgs e)
         {
-            ChangePage(2,null);
+            ChangePage(2, null);
         }
 
         private void PageListBox_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if(PageListBox.SelectedItem !=null)
+            if (PageListBox.SelectedItem != null)
             {
-                if(int.TryParse(PageListBox.SelectedItem.ToString(),out int pageNumber))
+                if (int.TryParse(PageListBox.SelectedItem.ToString(), out int pageNumber))
                 {
-                    ChangePage(0,pageNumber-1);
+                    ChangePage(0, pageNumber - 1);
                 }
             }
-          //  ChangePage(0, Convert.ToInt32(PageListBox.SelectedItem.ToString()) - 1);
+            //  ChangePage(0, Convert.ToInt32(PageListBox.SelectedItem.ToString()) - 1);
         }
 
         private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
             Manager.MainFrame.Navigate(new AddEditPage(null));
         }
+
+        private void Page_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                // Сбрасываем кэш контекста
+                var context = Mazina_GLAZKIEntities1.GetContext();
+
+                // Обновляем список с фильтрами
+                UpdateService();
+
+                // Для корректной работы пагинации берём отфильтрованный список из ItemsSource
+                TableList = ServiceListView.ItemsSource.Cast<Agent>().ToList();
+
+                // Переходим на первую страницу
+                ChangePage(0, 0);
+            }
+        }
+
+        private void EditMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedAgent = ServiceListView.SelectedItem as Agent;
+
+            if (selectedAgent != null)
+            {
+               
+                Manager.MainFrame.Navigate(new AddEditPage(selectedAgent));
+            }
+            else
+            {
+                MessageBox.Show("Выберите агента для редактирования");
+            }
+        }
     }
+
 }

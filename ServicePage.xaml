@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Mazina_GlazkiSave"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="ServicePage" FontFamily="Century Gothic">
+      Title="ServicePage" FontFamily="Century Gothic" IsVisibleChanged="Page_IsVisibleChanged">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -36,6 +36,13 @@
             </ComboBox>
         </StackPanel>
         <ListView Grid.Row="1" Name="ServiceListView">
+        
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Редактировать" Click="EditMenuItem_Click"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+          
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="#B175EE" BorderThickness="1">
@@ -79,8 +86,8 @@
                             <TextBlock Text=" Приоритетность: "/>
                             <TextBlock Text="{Binding Priority}"/>
                         </TextBlock>
-
-                        <TextBlock Text="{Binding Discount, StringFormat={}{0:0}%}" Grid.Column="2"  FontSize="40"/>
+                           
+                            <TextBlock Text="{Binding Discount, StringFormat={}{0:0}%}" Grid.Column="2"  FontSize="40"/>
 
                     </Grid>
                     </Border>

@@ -28,41 +28,57 @@ namespace Mazina_GlazkiSave
         public AddEditPage(Agent agent)
         {
             InitializeComponent();
-            _context = new Mazina_GLAZKIEntities1();
+            _context = Mazina_GLAZKIEntities1.GetContext();
+           // MessageBox.Show($"ID агента: {(agent != null ? agent.ID.ToString() : "null")}");
 
             if (agent != null && agent.ID != 0)
             {
+                // Загружаем существующего агента
                 currentAgents = _context.Agent.Include("ProductSale.Product")
                                             .FirstOrDefault(a => a.ID == agent.ID);
+                
 
                 if (currentAgents == null)
                 {
+                    // Если агент не найден в базе
                     currentAgents = new Agent();
                     currentAgents.ProductSale = new List<ProductSale>();
                     DeleteBtn.Visibility = Visibility.Hidden;
+                    
+                    _context.Agent.Add(currentAgents);
                 }
                 else
                 {
+                    
                     ComboType.SelectedIndex = currentAgents.AgentTypeID - 1;
                     DeleteBtn.Visibility = Visibility.Visible;
 
                     if (!string.IsNullOrEmpty(currentAgents.Logo))
                     {
-                        string imagePath = AppDomain.CurrentDomain.BaseDirectory + "agents\\" + currentAgents.Logo; if (File.Exists(imagePath))
+                        string projectPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\.."));
+                        string imagePath = System.IO.Path.Combine(projectPath, currentAgents.Logo);
+
+                        if (File.Exists(imagePath))
                         {
                             LogoImage.Source = new BitmapImage(new Uri(imagePath));
                         }
                     }
-
                 }
             }
             else
-            { 
-                currentAgents = new Agent(); 
+            {
+                // нов агент
+                currentAgents = new Agent();
+                currentAgents.ProductSale = new List<ProductSale>();
                 DeleteBtn.Visibility = Visibility.Hidden;
+
+                _context.Agent.Add(currentAgents);
             }
+
+            // м контекст данных  привязка
             DataContext = currentAgents;
         }
+
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -87,48 +103,72 @@ namespace Mazina_GlazkiSave
                 errors.AppendLine("Укажите телефон агента");
             else
             {
-                string ph = currentAgents.Phone.Replace("(", "").Replace("-", "").Replace("+", "");
-                if (((ph[1] == '9' || ph[1] == '4' || ph[1] == '8') && ph.Length != 11) || (ph[1] == '3' && ph.Length != 12))
-                    errors.AppendLine("Укажите телефон корректно");
+                if (string.IsNullOrWhiteSpace(currentAgents.Phone))
+                    errors.AppendLine("Укажите телефон агента");
+                else
+                {
+                    string ph = currentAgents.Phone
+                        .Replace("+", "")
+                        .Replace("(", "")
+                        .Replace(")", "")
+                        .Replace("-", "")
+                        .Replace(" ", "");
+
+                    if (ph.Length != 11)
+                        errors.AppendLine("Телефон должен содержать 11 цифр");
+                    else if (ph[0] != '7' && ph[0] != '8')
+                        errors.AppendLine("Телефон должен начинаться с 7 или 8");
+                }
             }
             if (string.IsNullOrWhiteSpace(currentAgents.Email))
-                errors.AppendLine("Укажите почту агента");
+                errors.AppendLine("Укажите почту агента"); 
             if (errors.Length > 0)
             {
                 MessageBox.Show(errors.ToString());
                 return;
             }
-            // добавить в контекст текущие значения новой услуги 
-            if (currentAgents.ID ==0) 
-                Mazina_GLAZKIEntities1.GetContext().SaveChanges();
-            // сохр изм, если нет ошибок.
+            currentAgents.AgentTypeID = ComboType.SelectedIndex + 1;
+           
             try
             {
-                Mazina_GLAZKIEntities1.GetContext().SaveChanges();
+                _context.SaveChanges();
                 MessageBox.Show("Информация сохранена");
                 Manager.MainFrame.GoBack();
             }
-            catch(Exception ex) { MessageBox.Show(ex.Message.ToString()); }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка сохранения: {ex.Message}");
+            }
         }
 
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Проверка на наличие продаж
-                if (currentAgents.ProductSale.Count > 0)
+                // загр агента
+                var agentForDelete = _context.Agent
+                    .Include("ProductSale")
+                    .FirstOrDefault(a => a.ID == currentAgents.ID);
+
+                if (agentForDelete == null)
                 {
-                    MessageBox.Show("Нельзя удалить агента, у которого есть продажи!");
+                    MessageBox.Show("Агент не найден в базе");
                     return;
                 }
 
-                var result = MessageBox.Show("Вы точно хотите удалить агента?", "Внимание",
+                // Проверка на наличие продаж
+                if (agentForDelete.ProductSale != null && agentForDelete.ProductSale.Count > 0)
+                {
+                    MessageBox.Show("Нельзя удалить агента, с продажами");
+                    return;
+                }
+
+                var result = MessageBox.Show("Удалить агента?", "Внимание",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    _context.Agent.Attach(currentAgents);
-                    _context.Agent.Remove(currentAgents);
+                    _context.Agent.Remove(agentForDelete);
                     _context.SaveChanges();
                     MessageBox.Show("Агент удален");
                     Manager.MainFrame.GoBack();
@@ -139,38 +179,37 @@ namespace Mazina_GlazkiSave
                 MessageBox.Show($"Ошибка удаления: {ex.Message}");
             }
         }
-
         private void ChangePicBtn_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog OpenFile = new OpenFileDialog();
-            OpenFile.Filter = "Image files (*.png;*.jpeg;*.jpg)|*.png;*.jpeg;*.jpg|All files (*.*)|*.*";
-            if (OpenFile.ShowDialog() == true)
+            OpenFileDialog myOpenFileDialog = new OpenFileDialog();
+            myOpenFileDialog.Filter = "Image files (*.png;*.jpeg;*.jpg)|*.png;*.jpeg;*.jpg|All files (*.*)|*.*";
+
+            if (myOpenFileDialog.ShowDialog() == true)
             {
                 try
                 {
                     // Копируем файл в папку проекта
-                    string fileName = System.IO.Path.GetFileName(OpenFile.FileName);
-                    string destPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,  "agents", fileName);
+                    string fileName = System.IO.Path.GetFileName(myOpenFileDialog.FileName);
+                    string destPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imgs", "agents", fileName);
 
                     // Создаем папку, если её нет
-                    Directory.CreateDirectory(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "agents"));
+                    Directory.CreateDirectory(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imgs", "agents"));
 
                     // Копируем файл (перезаписываем если существует)
-                    File.Copy(OpenFile.FileName, destPath, true);
+                    File.Copy(myOpenFileDialog.FileName, destPath, true);
 
                     // Устанавливаем изображение
                     LogoImage.Source = new BitmapImage(new Uri(destPath));
 
-                    // Сохраняем только имя файла в БД
-                    currentAgents.Logo = fileName;
+                    // ИЗМЕНИ ЭТУ СТРОКУ - сохраняем с путём к папке
+                    currentAgents.Logo = $@"\agents\{fileName}";  // ← вот так
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Ошибка при загрузке изображения: {ex.Message}");
                 }
             }
-
-
         }
     }
+   
 }
