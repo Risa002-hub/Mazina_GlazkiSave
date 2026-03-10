@@ -23,7 +23,7 @@ namespace Mazina_GlazkiSave
     public partial class AddEditPage : Page
     {
         Agent currentAgents;
-        private Mazina_GLAZKIEntities1 _context;
+        private Mazina_GLAZKIEntities1 _context; 
 
         public AddEditPage(Agent agent)
         {
