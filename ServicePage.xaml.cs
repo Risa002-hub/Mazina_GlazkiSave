@@ -37,11 +37,10 @@ namespace Mazina_GlazkiSave
 
         List<Agent> CurrentPageList = new List<Agent>();
         List<Agent> TableList;
-<<<<<<< HEAD
+
         int AgentCount = 10;
         private void ChangePage(int direction, int? selectedPage)
-=======
-        private void ChangePage(int direction, int?SelectedPage)
+
         {
             CurrentPageList.Clear();
             CountRecords = TableList.Count;
@@ -53,9 +52,6 @@ namespace Mazina_GlazkiSave
             {
                 CountPage = CountRecords / 10;  
             }
->>>>>>> 5817f232527e2630e890db3528a148d509a82abf
-
-        {
             if (PageListBox == null) return;// смотрим наличие данных
 
             CountRecords = TableList.Count; // общее колво данных
